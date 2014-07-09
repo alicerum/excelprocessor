@@ -1,4 +1,5 @@
 (ns excelprocessor.web
+  (:use [excelprocessor.imgs-check :as images])
   (:require [compojure.core :refer :all]
             [compojure.handler :as handler]
             [compojure.route :as route]
@@ -11,7 +12,9 @@
             [clojure.string :as clstr]))
 
 (defn render-uploaded-data [ids]
-  (apply str ids))
+  (clojure.string/join
+    "\n"
+    (pmap images/send-img-req ids)))
 
 (defroutes app-routes
   (GET "/" [] "Hello world")

@@ -19,8 +19,10 @@
   (map #(.contains % "image") content-types))
 
 (defn send-img-req [id]
-  (let [urls (get-urls id)
-        is-image-seq (is-image? (get-content-types (get-responses urls)))]
-    (some
-      #(if (nil? %) false %)
-      (map #(if %2 %1 nil) urls is-image-seq))))
+  (if (.isEmpty (.trim id))
+    ""
+    (let [urls (get-urls id)
+          is-image-seq (is-image? (get-content-types (get-responses urls)))]
+      (some
+        #(if (nil? %) false %)
+        (map #(if %2 %1 nil) urls is-image-seq)))))
