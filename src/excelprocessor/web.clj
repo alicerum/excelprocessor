@@ -1,11 +1,26 @@
 (ns excelprocessor.web
-  (:require [compojure.core :refer [defroutes GET PUT POST DELETE ANY]]
+  (:require [compojure.core :refer :all]
+            [compojure.handler :as handler]
+            [compojure.route :as route]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.resource :as resource]
             [ring.middleware.content-type :as ct]
             [ring.middleware.not-modified :as notmod]
-            [environ.core :refer [env]]))
+            [ring.middleware.multipart-params :as mp]
+            [environ.core :refer [env]]
+            [clojure.string :as clstr]))
 
+(defn render-uploaded-data [ids]
+  (apply str ids))
+
+(defroutes app-routes
+  (GET "/" [] "Hello world")
+  (mp/wrap-multipart-params
+    (POST "/post/fileData.html" req
+          (render-uploaded-data
+            (clstr/split (get-in req [:params :ids]) #"\n"))))
+  (route/resources "/")
+  (route/not-found "404.html"))
 
 (defn handler [request]
   {:status 200
@@ -13,10 +28,7 @@
    :body "Hello World!"})
 
 (def app
-  (-> handler
-      (resource/wrap-resource "public")
-      (ct/wrap-content-type)
-      (notmod/wrap-not-modified)))
+  (handler/site app-routes))
 
 (defn -main [& [port]]
   (let [port (Integer. (or port (env :port) 5000))]
