@@ -12,9 +12,10 @@
             [clojure.string :as clstr]))
 
 (defn render-uploaded-data [ids]
-  (clojure.string/join
-    "\n"
-    (pmap images/get-img-src-non-nil ids)))
+  (do
+    (println 10)
+    (println (vector? ids))
+    (clojure.string/join "/n" ids)))
 
 (defroutes app-routes
   (GET "/" [] "Hello world")

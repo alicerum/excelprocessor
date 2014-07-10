@@ -7,3 +7,7 @@ pom.xml
 /checkouts
 /.env
 /target
+.idea/*
+.lein-repl-history
+.nrepl-port
+excelprocessor.iml
