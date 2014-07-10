@@ -14,14 +14,13 @@
 (defn render-uploaded-data [ids]
   (clojure.string/join
     "\n"
-    (pmap images/send-img-req ids)))
+    (pmap images/get-img-src-non-nil ids)))
 
 (defroutes app-routes
   (GET "/" [] "Hello world")
-  (mp/wrap-multipart-params
-    (POST "/post/fileData.html" req
-          (render-uploaded-data
-            (clstr/split (get-in req [:params :ids]) #"\n"))))
+  (POST "/post/fileData.html" req
+        (render-uploaded-data
+          (clstr/split (get-in req [:params :ids]) #"\n")))
   (route/resources "/")
   (route/not-found "404.html"))
 
