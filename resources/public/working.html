@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Working</title>
+
+    <script type="text/javascript" src="script/jquery-1.11.1.min.js"></script>
+    <script>
+        function checkAllDone() {
+            $.getJSON("/get/check", function(data) {
+                console.log(data.result);
+                $("div#data").html(data.result);
+            });
+        }
+    </script>
+</head>
+<body>
+    Working on it!<br><br>
+
+    <button onclick="checkAllDone()">Check</button><br><br>
+
+    <div id="data"></div>
+</body>
+</html>

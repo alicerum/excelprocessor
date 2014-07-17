@@ -8,22 +8,47 @@
             [ring.middleware.content-type :as ct]
             [ring.middleware.not-modified :as notmod]
             [ring.middleware.multipart-params :as mp]
+            [ring.util.response :as resp]
             [environ.core :refer [env]]
-            [clojure.string :as clstr]))
+            [clojure.string :as clstr]
+            [clojure.data.json :as json]))
 
-(defn render-uploaded-data [ids]
-  (images/get-img-src-non-nil (first ids)))
+(def result (promise))
+
+(defn work-all [ids]
+  (let [a (map #(future (images/get-img-src-non-nil %)) ids)]
+    (deliver result a)))
+
+(defn start-working [ids]
+  (do
+    (def result (promise))
+    (future (work-all ids))
+    (resp/redirect "/working.html")))
+
+(defn wrap-dir-index [handler]
+  (fn [req]
+    (handler
+      (update-in req [:uri]
+                 #(if (= "/" %) "/index.html" %)))))
+
+(defn get-count-realized [list]
+  (reduce + (map #(if (realized? %) 1 0) list)))
 
 (defroutes app-routes
-  (GET "/" [] "Hello world")
   (POST "/post/fileData" req
-        (render-uploaded-data
-          (clstr/split (get-in req [:params :ids]) #"\n")))
+        (start-working
+          (clstr/split (get-in req [:params :ids]) #"\r\n")))
+  (GET "/get/check" req
+       (let [count-realized (get-count-realized @result)
+             count-all (count @result)]
+         (if (= count-all count-realized)
+           (json/write-str {:done true :result (clstr/join "<br>" (map deref @result))})
+           (json/write-str {:done false :result (/ count-realized count-all)}))))
   (route/resources "/")
   (route/not-found "404.html"))
 
-(def app
-  (handler/site app-routes))
+(def app (-> (handler/site app-routes)
+             (wrap-dir-index)))
 
 (defn -main [& [port]]
   (let [port (Integer. (or port (env :port) 5000))]

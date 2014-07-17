@@ -9,7 +9,8 @@
                  [ring/ring-devel "1.2.2"]
                  [environ "0.5.0"]
                  [com.cemerick/drawbridge "0.0.6"]
-                 [http-kit "2.1.16"]]
+                 [http-kit "2.1.16"]
+                 [org.clojure/data.json "0.2.5"]]
   :min-lein-version "2.0.0"
   :plugins [[environ/environ.lein "0.2.1"]]
   :hooks [environ.leiningen.hooks]
