@@ -12,23 +12,15 @@
             [clojure.string :as clstr]))
 
 (defn render-uploaded-data [ids]
-  (do
-    (println 10)
-    (println (vector? ids))
-    (clojure.string/join "/n" ids)))
+  (images/get-img-src-non-nil (first ids)))
 
 (defroutes app-routes
   (GET "/" [] "Hello world")
-  (POST "/post/fileData.html" req
+  (POST "/post/fileData" req
         (render-uploaded-data
           (clstr/split (get-in req [:params :ids]) #"\n")))
   (route/resources "/")
   (route/not-found "404.html"))
-
-(defn handler [request]
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body "Hello World!"})
 
 (def app
   (handler/site app-routes))
