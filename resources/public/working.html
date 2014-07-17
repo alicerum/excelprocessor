@@ -9,7 +9,7 @@
         function checkAllDone() {
             $.getJSON("/get/check", function(data) {
                 console.log(data.result);
-                $("div#data").html(data.result);
+                $("textarea#data").text(data.result);
             });
         }
     </script>
@@ -19,6 +19,6 @@
 
     <button onclick="checkAllDone()">Check</button><br><br>
 
-    <div id="data"></div>
+    <textarea id="data"></textarea>
 </body>
 </html>

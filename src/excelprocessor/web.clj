@@ -42,7 +42,7 @@
        (let [count-realized (get-count-realized @result)
              count-all (count @result)]
          (if (= count-all count-realized)
-           (json/write-str {:done true :result (clstr/join "<br>" (map deref @result))})
+           (json/write-str {:done true :result (clstr/join "\r\n" (map deref @result))})
            (json/write-str {:done false :result (/ count-realized count-all)}))))
   (route/resources "/")
   (route/not-found "404.html"))
