@@ -8,7 +8,7 @@
     <script>
         function checkAllDone() {
             $.getJSON("/get/check", function(data) {
-                console.log(data.result);
+                console.log(data);
                 $("textarea#data").text(data.result);
             });
         }

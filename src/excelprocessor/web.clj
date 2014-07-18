@@ -16,7 +16,7 @@
 (def result (promise))
 
 (defn work-all [ids]
-  (let [a (map #(future (images/get-img-src-non-nil %)) ids)]
+  (let [a (doall (map #(images/get-img-src-non-nil %) ids))]
     (deliver result a)))
 
 (defn start-working [ids]
@@ -39,11 +39,9 @@
         (start-working
           (clstr/split (get-in req [:params :ids]) #"\r\n")))
   (GET "/get/check" req
-       (let [count-realized (get-count-realized @result)
-             count-all (count @result)]
-         (if (= count-all count-realized)
-           (json/write-str {:done true :result (clstr/join "\r\n" (map deref @result))})
-           (json/write-str {:done false :result (/ count-realized count-all)}))))
+    (if (realized? result)
+      (json/write-str {:done true :result (clstr/join "\r\n" @result)})
+      (json/write-str {:done false :result "not yet"})))
   (route/resources "/")
   (route/not-found "404.html"))
 
