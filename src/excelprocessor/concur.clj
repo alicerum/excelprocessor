@@ -11,7 +11,7 @@
   (/ @processed @all))
 
 (defn realize-futures [urls]
-  (let [processed-urls (map deref urls)]
+  (let [processed-urls (doall (map deref urls))]
     (swap! processed #(+ % (count urls)))
     processed-urls))
 
