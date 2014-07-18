@@ -8,7 +8,9 @@
 (def all (atom 1))
 
 (defn get-percentage []
-  (/ @processed @all))
+  (if (= @all 0) ; fuck you division by zero! you won't get me again!
+    0
+    (/ @processed @all)))
 
 (defn realize-futures [urls]
   (let [processed-urls (doall (map deref urls))]
