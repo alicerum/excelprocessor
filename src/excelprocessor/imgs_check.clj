@@ -13,21 +13,12 @@
   (map #(str base-img-url id "." %) extensions))
 
 (defn http-get-retry [url]
-  (loop [i 0
-         time nil]
-    (if (and (not (nil? time))
-             (ctime/after? (ctime/plus time (ctime/minutes 1)) (ctime/now)))
-      (recur 0 time)
-      (if (not (nil? time))
-        (recur 0 nil)
-        (if (> i 0)
-          (recur 0 (ctime/now))
-          (let [{:keys [headers error]} @(http-kit/get url)]
-            (if error
-              (do
-                (println error)
-                (recur (+ i 1) nil))
-              headers)))))))
+  (let [{:keys [headers error]} @(http-kit/get url)]
+    (if error
+      (do
+        (println error)
+        (throw (Exception. "Error in request"))
+      headers))))
 
 (defn get-responses [urls]
   (map #(http-get-retry %) urls))
