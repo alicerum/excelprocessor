@@ -6,16 +6,30 @@
 
     <script type="text/javascript" src="script/jquery-1.11.1.min.js"></script>
     <script>
+        var timer;
+
+        function startCheckTimer() {
+            timer = setInterval("checkAllDone()", 3000);
+        }
+
         function checkAllDone() {
             $.getJSON("/get/check", function(data) {
                 console.log(data);
-                $("textarea#data").text(data.result);
+
+                if (data.done) {
+                    $("textarea#data").text(data.result);
+                    clearInterval(timer);
+                    timer = null;
+                } else
+                    $("div#percent").text(data.result);
             });
         }
     </script>
 </head>
-<body>
+<body onload="startCheckTimer()">
     Working on it!<br><br>
+
+    Done: <div id="percent">0</div><br>
 
     <button onclick="checkAllDone()">Check</button><br><br>
 
