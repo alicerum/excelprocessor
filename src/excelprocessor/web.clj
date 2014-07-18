@@ -42,7 +42,7 @@
   (GET "/get/check" req
     (if-not (realized? result)
       (json/write-str {:done false :result (concur/get-percentage)})
-      (json/write-str {:done true :result (clstr/join "\r\n" (map deref @result))})))
+      (json/write-str {:done true :result (clstr/join "\r\n" @result)})))
   (route/resources "/")
   (route/not-found "404.html"))
 
