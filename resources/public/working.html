@@ -17,22 +17,25 @@
                 console.log(data);
 
                 if (data.done) {
+                    $("div#percent").text("100%");
+                    $("div#status").text("Finished working!");
                     $("textarea#data").text(data.result);
                     clearInterval(timer);
                     timer = null;
-                } else
-                    $("div#percent").text(data.result);
+                } else {
+                    $("div#percent").text((100 * data.result).toFixed(0) + "%");
+                }
             });
         }
     </script>
 </head>
 <body onload="startCheckTimer()">
-    Working on it!<br><br>
+    <div id="status">Working on it!</div><br>
 
-    Done: <div id="percent">0</div><br>
+    Done: <div id="percent">0%</div><br>
 
-    <button onclick="checkAllDone()">Check</button><br><br>
+    <a href="/index.html">Another data</a><br><br>
 
-    <textarea id="data"></textarea>
+    <textarea id="data" rows="40" cols="80"></textarea>
 </body>
 </html>
