@@ -2,7 +2,7 @@
   (:require [excelprocessor.imgs-check :as images]))
 
 ;; Will work with 5 threads for now
-(def n 40)
+(def n 5)
 
 (def processed (atom 0))
 (def all (atom 1))

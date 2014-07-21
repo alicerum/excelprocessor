@@ -9,7 +9,7 @@
 (def non-image-msg "Нет картинки")
 
 (defn get-urls [id]
-  (map #(str base-img-url id "." %) extensions))
+  (map #(str base-img-url (http-kit/url-encode id) "." %) extensions))
 
 (defn get-responses [urls]
   (map #(http-kit/get %) urls))
@@ -33,6 +33,9 @@
           is-image-seq)))))
 
 (defn get-img-src-non-nil [id]
-  (if-let [url (send-img-req id)]
-    url
-    non-image-msg))
+  (try
+    (if-let [url (send-img-req id)]
+      url
+      non-image-msg)
+    (catch Exception e
+           "Ошибка")))
