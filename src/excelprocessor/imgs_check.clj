@@ -62,10 +62,12 @@
 
 (defn async-get [url response-chan]
   (println url)
-  (http-kit/get url (hash-map) #(async/go (async/>! response-chan
-                                                            (if (right-content-type? %)
-                                                              url
-                                                              non-image-msg)))))
+  (http-kit/get url #(if-let [error (:error %)]
+                      (async-get url response-chan) ; Doh. Fuck you, will just spam requests until you process them.
+                      (async/go (async/>! response-chan
+                                          (if (right-content-type? %)
+                                            url
+                                            non-image-msg))))))
 
 (defn transform-urls-from-set [part set]
   (let [urls-in-set (map #(set %) part)]
