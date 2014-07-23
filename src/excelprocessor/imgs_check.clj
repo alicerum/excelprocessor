@@ -1,5 +1,6 @@
 (ns excelprocessor.imgs-check
-  (:require [org.httpkit.client :as http-kit]))
+  (:require [org.httpkit.client :as http-kit]
+            [clojure.core.async :as async]))
 
 (def extensions
   ["gif" "jpg" "jpeg" "png"])
@@ -39,3 +40,55 @@
       non-image-msg)
     (catch Exception e
            "Ошибка")))
+
+
+(def url-chan (async/chan))
+
+(defn prepare-url [id]
+  (if (.isEmpty (.trim id))
+    (repeat
+      (count extensions)
+      "")
+    (map #(str base-img-url (http-kit/url-encode id) "." %)
+         extensions)))
+
+(defn prepare-urls [ids]
+  (flatten (map prepare-url ids)))
+
+(defn right-content-type? [resp]
+  (if-let [error (:error resp)]
+    (do (println error)
+        nil))
+  (let [content-type (:content-type (:headers resp))]
+    (.contains content-type "image")))
+
+(defn async-get [url]
+  (http-kit/get url (hash-map) #(async/go (async/>! url-chan
+                                                            (if (right-content-type? %)
+                                                              url
+                                                              non-image-msg)))))
+
+(defn transform-urls-from-set [part set]
+  (let [urls-in-set (map #(set %) part)]
+    (if-let [result (some identity urls-in-set)]
+      result
+      non-image-msg)))
+
+(defn read-urls-from-chan [count]
+  (loop [counter 0
+         limit count
+         set #{}]
+    (if (= counter limit)
+      (conj set non-image-msg)
+      (recur
+        (+ counter 1)
+        limit
+        (conj set (async/<!! url-chan))))))
+
+(defn get-url-responses [url-list]
+  (let [nonempty-list (filter #(not (.isEmpty (.trim %))) url-list)]
+    (doseq [url nonempty-list]
+      (async-get url))
+    (let [right-url-set (read-urls-from-chan (count nonempty-list))
+          parted-initial-list (partition-all (count extensions) url-list)]
+      (map #(transform-urls-from-set % right-url-set) parted-initial-list))))

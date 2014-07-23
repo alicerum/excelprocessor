@@ -10,7 +10,8 @@
                  [environ "0.5.0"]
                  [com.cemerick/drawbridge "0.0.6"]
                  [http-kit "2.1.16"]
-                 [org.clojure/data.json "0.2.5"]]
+                 [org.clojure/data.json "0.2.5"]
+                 [org.clojure/core.async "0.1.303.0-886421-alpha"]]
   :min-lein-version "2.0.0"
   :plugins [[environ/environ.lein "0.2.1"]]
   :hooks [environ.leiningen.hooks]
