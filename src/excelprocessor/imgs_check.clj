@@ -42,8 +42,6 @@
            "Ошибка")))
 
 
-(def url-chan (async/chan))
-
 (defn prepare-url [id]
   (if (.isEmpty (.trim id))
     (repeat
@@ -62,8 +60,9 @@
   (let [content-type (:content-type (:headers resp))]
     (.contains content-type "image")))
 
-(defn async-get [url]
-  (http-kit/get url (hash-map) #(async/go (async/>! url-chan
+(defn async-get [url response-chan]
+  (println url)
+  (http-kit/get url (hash-map) #(async/go (async/>! response-chan
                                                             (if (right-content-type? %)
                                                               url
                                                               non-image-msg)))))
@@ -74,7 +73,7 @@
       result
       non-image-msg)))
 
-(defn read-urls-from-chan [count]
+(defn read-urls-from-chan [count response-chan]
   (loop [counter 0
          limit count
          set #{}]
@@ -83,12 +82,13 @@
       (recur
         (+ counter 1)
         limit
-        (conj set (async/<!! url-chan))))))
+        (conj set (async/<!! response-chan))))))
 
 (defn get-url-responses [url-list]
-  (let [nonempty-list (filter #(not (.isEmpty (.trim %))) url-list)]
+  (let [nonempty-list (filter #(not (.isEmpty (.trim %))) url-list)
+        resp-chan (async/chan)]
     (doseq [url nonempty-list]
-      (async-get url))
-    (let [right-url-set (read-urls-from-chan (count nonempty-list))
+      (async-get url resp-chan))
+    (let [right-url-set (read-urls-from-chan (count nonempty-list) resp-chan)
           parted-initial-list (partition-all (count extensions) url-list)]
       (map #(transform-urls-from-set % right-url-set) parted-initial-list))))
