@@ -1,6 +1,5 @@
 (ns excelprocessor.web
-  (:use [excelprocessor.imgs-check :as images]
-        [excelprocessor.concur :as concur])
+  (:use [excelprocessor.imgs-check :as images])
   (:require [compojure.core :refer :all]
             [compojure.handler :as handler]
             [compojure.route :as route]
@@ -17,7 +16,7 @@
 (def result (promise))
 
 (defn work-all [ids]
-  (let [a (concur/run-all-in-parts ids)]
+  (let [a (images/get-url-responses (images/prepare-urls ids))]
     (deliver result a)))
 
 (defn start-working [ids]
@@ -41,7 +40,7 @@
           (clstr/split (get-in req [:params :ids]) #"\r\n")))
   (GET "/get/check" req
     (if-not (realized? result)
-      (json/write-str {:done false :result (concur/get-percentage)})
+      (json/write-str {:done false :result (images/get-percentage)})
       (json/write-str {:done true :result (clstr/join "\r\n" @result)})))
   (route/resources "/")
   (route/not-found "404.html"))

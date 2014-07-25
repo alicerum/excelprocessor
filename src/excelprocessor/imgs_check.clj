@@ -9,8 +9,6 @@
 
 (def non-image-msg "Нет картинки")
 
-(def percentage (atom 0))
-
 (defn prepare-url [id]
   (if (.isEmpty (.trim id))
     (repeat
@@ -45,6 +43,9 @@
 
 (def all-count (atom 1))
 (def processed-count (atom 0))
+
+(defn get-percentage []
+  (/ @processed-count @all-count))
 
 (defn reset-counters [all]
   (reset! all-count
