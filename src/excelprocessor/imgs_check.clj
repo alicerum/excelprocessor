@@ -72,6 +72,8 @@
     (reset-counters (count url-list))
     (doseq [url nonempty-list]
       (async-get url resp-chan))
-    (let [right-url-set (read-urls-from-chan (count nonempty-list) resp-chan)
+    (let [right-url-set (conj
+                          (read-urls-from-chan (count nonempty-list) resp-chan)
+                          "")                                                   ; Reely need empty str in the set
           parted-initial-list (partition-all (count extensions) url-list)]
       (map #(transform-urls-from-set % right-url-set) parted-initial-list))))
