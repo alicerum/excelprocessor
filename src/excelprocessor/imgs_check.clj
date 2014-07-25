@@ -9,38 +9,7 @@
 
 (def non-image-msg "Нет картинки")
 
-(defn get-urls [id]
-  (map #(str base-img-url (http-kit/url-encode id) "." %) extensions))
-
-(defn get-responses [urls]
-  (map #(http-kit/get %) urls))
-
-(defn get-content-types [responses]
-  (map #(:content-type (:headers (deref %))) responses))
-
-(defn is-image? [content-types]
-  (map #(.contains % "image") content-types))
-
-(defn send-img-req [id]
-  (if (.isEmpty (.trim id))
-    ""
-    (let [urls (get-urls id)
-          is-image-seq (is-image? (get-content-types (get-responses urls)))]
-      (some
-        #(if (nil? %) false %)
-        (map
-          #(if %2 %1 nil)
-          urls
-          is-image-seq)))))
-
-(defn get-img-src-non-nil [id]
-  (try
-    (if-let [url (send-img-req id)]
-      url
-      non-image-msg)
-    (catch Exception e
-           "Ошибка")))
-
+(def percentage (atom 0))
 
 (defn prepare-url [id]
   (if (.isEmpty (.trim id))
@@ -61,7 +30,6 @@
     (.contains content-type "image")))
 
 (defn async-get [url response-chan]
-  (println url)
   (http-kit/get url #(if-let [error (:error %)]
                       (async-get url response-chan) ; Doh. Fuck you, will just spam requests until you process them.
                       (async/go (async/>! response-chan
@@ -75,6 +43,14 @@
       result
       non-image-msg)))
 
+(def all-count (atom 1))
+(def processed-count (atom 0))
+
+(defn reset-counters [all]
+  (reset! all-count
+          (if (> all 0) all 1)) ; Don't want to get division by zero here
+  (reset! processed-count 0))
+
 (defn read-urls-from-chan [count response-chan]
   (loop [counter 0
          limit count
@@ -84,11 +60,15 @@
       (recur
         (+ counter 1)
         limit
-        (conj set (async/<!! response-chan))))))
+        (conj set
+              (let [processed-url (async/<!! response-chan)] ; Need to get the url from channel, only then we can
+                (swap! processed-count inc)                  ; inc the counter
+                processed-url))))))
 
 (defn get-url-responses [url-list]
   (let [nonempty-list (filter #(not (.isEmpty (.trim %))) url-list)
         resp-chan (async/chan)]
+    (reset-counters (count url-list))
     (doseq [url nonempty-list]
       (async-get url resp-chan))
     (let [right-url-set (read-urls-from-chan (count nonempty-list) resp-chan)
