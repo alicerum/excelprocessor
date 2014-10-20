@@ -23,7 +23,7 @@
 (defn send-img-req [id]
   (if (.isEmpty (.trim id))
     ""
-    (let [urls (get-urls id)
+    (let [urls (get-urls (.trim id))
           is-image-seq (is-image? (get-content-types (get-responses urls)))]
       (some
         #(if (nil? %) false %)
